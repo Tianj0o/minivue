@@ -5,7 +5,7 @@ class effectFn {
   }
   run() {
     activeFn = this;
-    this._fn();
+    return this._fn();
   }
 }
 let activeFn;
@@ -32,4 +32,5 @@ export function trigger(target, key) {
 export const effect = function (fn) {
   const effect = new effectFn(fn);
   effect.run();
+  return effect.run.bind(effect);
 };

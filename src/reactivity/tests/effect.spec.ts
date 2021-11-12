@@ -11,4 +11,16 @@ describe("happy path", () => {
     user.age++;
     expect(nextAge).toBe(3);
   });
+
+  it("effect return func", () => {
+    let num = 0;
+    const runner = effect(() => {
+      num++;
+      return "hhhh";
+    });
+    expect(num).toBe(1);
+    const res = runner();
+    expect(res).toBe("hhhh");
+    expect(num).toBe(2);
+  });
 });
