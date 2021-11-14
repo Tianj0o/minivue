@@ -1,5 +1,7 @@
 import { extend } from "../shared";
 
+let activeFn;
+let shouldTrack;
 class effectFn {
   _fn: any;
   scheduler?: any;
@@ -11,8 +13,15 @@ class effectFn {
     this.scheduler = scheduler;
   }
   run() {
+    if (!this.active) {
+      return this._fn();
+    }
+    shouldTrack = true;
     activeFn = this;
-    return this._fn();
+
+    const res = this._fn();
+    shouldTrack = false;
+    return res;
   }
   stop() {
     if (this.active) {
@@ -24,17 +33,19 @@ class effectFn {
     }
   }
 }
-
+function isTracking() {
+  return shouldTrack && activeFn !== undefined;
+}
 function clearupEffect(effect) {
   effect.deps.forEach((dep: any) => {
     dep.delete(effect);
   });
 }
 
-let activeFn;
 export const targetMap = new Map();
 
 export function track(target, key) {
+  if (!isTracking()) return;
   let effectMap = targetMap.get(target);
   if (!effectMap) {
     effectMap = new Map();
@@ -45,9 +56,8 @@ export function track(target, key) {
     effectFnSet = new Set();
     effectMap.set(key, effectFnSet);
   }
-  if (!activeFn) return;
+  if (effectFnSet.has(activeFn)) return;
   effectFnSet.add(activeFn);
-
   //给activeFn添加 收集到的set stop功能
   activeFn.deps.push(effectFnSet);
 }
