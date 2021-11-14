@@ -1,29 +1,13 @@
-import { track, trigger } from "./effect";
+import { mutalbleHandlers, readonlyHandlers } from "./baseHandlers";
 
 export function reactive(obj) {
-  return new Proxy(obj, {
-    get(target, key) {
-      //收集依赖
-      track(target, key);
-      return Reflect.get(target, key);
-    },
-    set(target, key, value) {
-      const res = Reflect.set(target, key, value);
-      trigger(target, key);
-      return res;
-    },
-  });
+  return createActiveObject(obj, mutalbleHandlers);
 }
 
 export function readonly(obj) {
-  return new Proxy(obj, {
-    get(target, key) {
-      track(target, key);
-      return Reflect.get(target, key);
-    },
-    set(target, key, value) {
-      console.warn("can not set Readonly");
-      return true;
-    },
-  });
+  return createActiveObject(obj, readonlyHandlers);
+}
+
+export function createActiveObject(obj, baseHandlers) {
+  return new Proxy(obj, baseHandlers);
 }
