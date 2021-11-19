@@ -33,7 +33,7 @@ class effectFn {
     }
   }
 }
-function isTracking() {
+export function isTracking() {
   return shouldTrack && activeFn !== undefined;
 }
 function clearupEffect(effect) {
@@ -56,6 +56,9 @@ export function track(target, key) {
     effectFnSet = new Set();
     effectMap.set(key, effectFnSet);
   }
+  trackEffects(effectFnSet);
+}
+export function trackEffects(effectFnSet) {
   if (effectFnSet.has(activeFn)) return;
   effectFnSet.add(activeFn);
   //给activeFn添加 收集到的set stop功能
@@ -64,6 +67,9 @@ export function track(target, key) {
 export function trigger(target, key) {
   const effectMap = targetMap.get(target);
   const effectFns = effectMap.get(key);
+  triggerEffects(effectFns);
+}
+export function triggerEffects(effectFns) {
   effectFns.forEach((effect) => {
     if (effect.scheduler) {
       effect.scheduler();
