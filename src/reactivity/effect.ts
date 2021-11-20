@@ -2,7 +2,7 @@ import { extend } from "../shared";
 
 let activeFn;
 let shouldTrack;
-class effectFn {
+export class effectFn {
   _fn: any;
   scheduler?: any;
   deps: any[] = [];
