@@ -19,7 +19,7 @@ function processElement(vnode: any, container: any) {
 }
 function mountElement(vnode: any, container: any) {
   // vnode
-  const el = document.createElement(vnode.type);
+  const el = (vnode.el = document.createElement(vnode.type));
 
   const { children } = vnode;
   if (typeof children === "string") {
@@ -53,10 +53,13 @@ function mountComponent(vnode: any, container) {
   setupComponent(instance);
 
   // 调用Render函数
-  setupRenderEffect(instance, container);
+  setupRenderEffect(instance, vnode, container);
 }
-function setupRenderEffect(instance: any, container: any) {
-  const subTree = instance.render.call(instance.setupState);
+function setupRenderEffect(instance: any, vnode: any, container: any) {
+  const subTree = instance.render.call(instance.proxy);
 
   patch(subTree, container);
+
+  // 组件处理完成 后
+  vnode.el = subTree.el;
 }
