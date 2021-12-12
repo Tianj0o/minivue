@@ -5,7 +5,13 @@ export const App = {
     window.self = this
     return h('div', {
       id: "test",
-      class: 'red test'
+      class: 'red test',
+      onClick: () => {
+        console.log('click')
+      },
+      onMousedown: () => {
+        console.log('mouseDown')
+      }
     },
       //string
       // 'hello,' + this.msg

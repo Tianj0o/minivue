@@ -1,4 +1,3 @@
-import { isObject } from "../shared/index";
 import { ShapeFlags } from "../shared/shapeFlags";
 
 export function createVNode(type, props?, children?) {

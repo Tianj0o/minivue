@@ -32,9 +32,16 @@ function mountElement(vnode: any, container: any) {
   }
 
   //props {}
-  Object.keys(vnode.props).forEach((key) => {
+  const { props } = vnode;
+  Object.keys(props).forEach((key) => {
     const val = vnode.props[key];
-    el.setAttribute(key, val);
+    const isOn = (key: string) => /^on[A-Z]/.test(key);
+    if (isOn(key)) {
+      const event = key.slice(2).toLowerCase();
+      el.addEventListener(event, val);
+    } else {
+      el.setAttribute(key, val);
+    }
   });
 
   container.append(el);
