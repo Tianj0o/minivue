@@ -27,7 +27,7 @@ describe("computed", () => {
     expect(cValue.value).toBe(1);
     expect(getter).toHaveBeenCalledTimes(1);
 
-    cValue.value;
+    expect(cValue.value).toBe(1);
     expect(getter).toHaveBeenCalledTimes(1);
 
     value.foo = 2;

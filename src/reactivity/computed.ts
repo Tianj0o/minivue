@@ -4,6 +4,7 @@ class ComputedRefImpl {
   private _getter: any;
   private dirty = true;
   effect: effectFn;
+  _value: any;
   constructor(getter) {
     this._getter = getter;
     this.effect = new effectFn(getter, () => {
@@ -15,8 +16,9 @@ class ComputedRefImpl {
   get value() {
     if (this.dirty) {
       this.dirty = false;
-      return this.effect.run();
+      this._value = this.effect.run();
     }
+    return this._value;
   }
 }
 
