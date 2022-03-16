@@ -27,7 +27,7 @@ export const App = {
         // onChangeTest: (...args) => {
         //   console.log(...args, 'test')
         // }
-      })]
+      }), h('div', {}, 'slots')]
     )
   },
   setup() {
