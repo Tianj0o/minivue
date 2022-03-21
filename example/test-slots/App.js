@@ -1,11 +1,11 @@
-import { h } from '../../lib/mini-vue.esm.js'
+import { h, createTextVnode } from '../../lib/mini-vue.esm.js'
 import { Foo } from './Foo.js'
 window.self = null
 export const App = {
   render() {
     const app = h('p', {}, 'App组件')
     const foo = h(Foo, { count: 365 }, {
-      header: ({ }) => h('p', {}, [app, h('h1', {}, 'test')]),
+      header: ({ }) => h('p', {}, [app, h('h1', {}, 'test'), createTextVnode('哈哈哈哈')]),
       footer: ({ age }) => h('p', {}, 'footer ' + age)
     })
     return h('div', { class: '父组件' }, [app, foo])
