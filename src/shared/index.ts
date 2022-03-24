@@ -1,4 +1,5 @@
 export const extend = Object.assign;
+export const ELEMENT_VALUE = {};
 
 export const isObject = (val) => {
   return val !== null && typeof val === "object";
