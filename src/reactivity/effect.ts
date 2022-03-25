@@ -25,10 +25,10 @@ export class effectFn {
   }
   stop() {
     if (this.active) {
+      clearupEffect(this);
       if (this.onStop) {
         this.onStop();
       }
-      clearupEffect(this);
       this.active = false;
     }
   }
@@ -74,7 +74,7 @@ export function triggerEffects(effectFns) {
     if (effect.scheduler) {
       effect.scheduler();
     } else {
-      effect._fn();
+      effect.run();
     }
   });
 }

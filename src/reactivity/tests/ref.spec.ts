@@ -71,4 +71,24 @@ describe("ref", () => {
     expect(proxyUser.age).toBe(10);
     expect(user.age.value).toBe(10);
   });
+  it("test1", () => {
+    const a = ref({
+      foo: 1,
+    });
+    let calls = 0;
+
+    effect(() => {
+      calls = a.value.foo;
+    });
+    expect(calls).toBe(1);
+    a.value.foo++;
+    expect(calls).toBe(2);
+    a.value = {
+      foo: 3,
+    };
+    expect(calls).toBe(3);
+    a.value.foo = 4;
+    expect(a.value.foo).toBe(4);
+    expect(calls).toBe(4);
+  });
 });

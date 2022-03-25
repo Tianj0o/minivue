@@ -24,7 +24,6 @@ export const App = {
       props.value.bar = undefined
     }
     function onDeleteProps() {
-      debugger
       props.value = {
         foo: 'new-foo'
       }

@@ -10,6 +10,8 @@ export function createRenderer(options) {
     createElement: hostCreateElement,
     patchProp: hostPatchProp,
     insert: hostInsert,
+    remove: hostRemove,
+    setElementText: hostsetElementText,
   } = options;
   function render(vnode, container) {
     patch(null, vnode, container, null);
@@ -46,16 +48,46 @@ export function createRenderer(options) {
     if (!n1) {
       mountElement(n2, container, parentComponent);
     } else {
-      patchElement(n1, n2, container);
+      patchElement(n1, n2, container, parentComponent);
     }
   }
-  function patchElement(n1, n2, container) {
+  function patchElement(n1, n2, container, parentComponent) {
     const el = (n2.el = n1.el);
     const oldProps = n1.props || ELEMENT_VALUE;
     const newProps = n2.props || ELEMENT_VALUE;
-
     patchProps(el, oldProps, newProps);
+
+    patchChildren(n1, n2, el, parentComponent);
+
     console.log("patchElement");
+  }
+  function patchChildren(n1, n2, container, parentComponent) {
+    const preShapeFlag = n1.shapeFlag;
+    const curShapeFlag = n2.shapeFlag;
+    // 1. new ->text  判断Old
+    const c1 = n1.children;
+    const c2 = n2.children;
+    if (curShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+      if (preShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+        // 将老的chidlren 全部remove
+        unmountChildren(c1);
+        // 设置text
+      }
+      // 新children 为text
+      // 判断 新旧 text是否相同
+      if (c1 !== c2) hostsetElementText(container, c2);
+    } else {
+      // 2. new ->array 判断Old
+      if (preShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+        hostsetElementText(container, "");
+        mountChildren(n2, container, parentComponent);
+      }
+    }
+  }
+  function unmountChildren(children) {
+    for (const element of children) {
+      hostRemove(element.el);
+    }
   }
   function patchProps(el, oldProps, newProps) {
     if (oldProps !== newProps) {
