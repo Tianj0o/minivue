@@ -18,8 +18,8 @@ export function patchProp(el, key, preValue, currentValue) {
   }
 }
 
-function insert(el, container) {
-  container.append(el);
+function insert(el, container, anchor = null) {
+  container.insertBefore(el, anchor);
 }
 function remove(child) {
   const parent = child.parentNode;
