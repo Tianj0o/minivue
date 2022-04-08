@@ -270,12 +270,42 @@ export function createRenderer(options) {
     anchor
   ) {
     //挂载组件
-    mountComponent(n2, container, parentComponent, anchor);
+    if (!n1) {
+      mountComponent(n2, container, parentComponent, anchor);
+    } else {
+      updateComponent(n1, n2);
+    }
   }
 
+  function updateComponent(n1, n2) {
+    const instance = (n2.component = n1.component);
+
+    if (shouldUpdateComponent(n1, n2)) {
+      instance.next = n2;
+      instance.update();
+    } else {
+      n2.el = n1.el;
+      n2.vnode = n2;
+      console.log(n2, "+++++");
+    }
+  }
+
+  function shouldUpdateComponent(n1, n2) {
+    const { props: preProps } = n1;
+    const { props: nextProps } = n2;
+    for (let key in nextProps) {
+      if (nextProps[key] !== preProps[key]) {
+        return true;
+      }
+    }
+    return false;
+  }
   function mountComponent(vnode: any, container, parentComponent, anchor) {
     // 创建组件实例
-    const instance = createComponentInstance(vnode, parentComponent);
+    const instance = (vnode.component = createComponentInstance(
+      vnode,
+      parentComponent
+    ));
     // 初始化组件实例
     setupComponent(instance);
 
@@ -288,7 +318,7 @@ export function createRenderer(options) {
     container: any,
     anchor
   ) {
-    effect(() => {
+    instance.update = effect(() => {
       if (!instance.isMounted) {
         const subTree = instance.render.call(instance.proxy);
         instance.subTree = subTree;
@@ -298,12 +328,15 @@ export function createRenderer(options) {
         vnode.el = subTree.el;
         instance.isMounted = true;
       } else {
+        const { next, vnode } = instance;
+        if (next) {
+          next.el = vnode.el;
+          updateComponentPreRender(instance, next);
+        }
         const subTree = instance.render.call(instance.proxy);
         const preSubTree = instance.subTree;
         instance.subTree = subTree;
-        // console.log("cur", subTree);
-        // console.log("pre", preSubTree);
-        // console.log("update");
+
         patch(preSubTree, subTree, container, instance, anchor);
       }
     });
@@ -312,7 +345,12 @@ export function createRenderer(options) {
     createApp: createAppAPI(render),
   };
 }
+function updateComponentPreRender(instance, nextVnode) {
+  instance.vnode = nextVnode;
+  instance.props = nextVnode.props;
 
+  nextVnode = null;
+}
 function getSequence(arr: number[]): number[] {
   const p = arr.slice();
   const result = [0];
