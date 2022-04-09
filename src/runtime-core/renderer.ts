@@ -3,6 +3,7 @@ import { ELEMENT_VALUE } from "../shared";
 import { ShapeFlags } from "../shared/shapeFlags";
 import { createComponentInstance, setupComponent } from "./component";
 import { createAppAPI } from "./createApp";
+import { queueJob } from "./scheduler";
 import { Fragment, Text } from "./vnode";
 
 export function createRenderer(options) {
@@ -17,6 +18,7 @@ export function createRenderer(options) {
     patch(null, vnode, container, null, null);
   }
   function patch(n1: any, n2: any, container: any, parentComponent, anchor) {
+    console.log("n1", n1, "n2", n2);
     const { shapeFlag, type } = n2;
     switch (type) {
       case Fragment:
@@ -112,7 +114,7 @@ export function createRenderer(options) {
       }
       i++;
     }
-    console.log(i);
+    // console.log(i);
     // 右侧对比
     while (i <= e1 && i <= e2) {
       const n1 = c1[e1],
@@ -132,7 +134,7 @@ export function createRenderer(options) {
       if (i <= e2) {
         while (i <= e2) {
           const anchor = e2 + 1 < c2.length ? c2[e2 + 1].el : null;
-          console.log(anchor);
+          // console.log(anchor);
           patch(null, c2[i], container, parentComponent, anchor);
           i++;
         }
@@ -160,7 +162,7 @@ export function createRenderer(options) {
       for (let i = s1; i <= e1; i++) {
         const preChild = c1[i];
         if (patched >= toBePatched) {
-          console.log("移除");
+          // console.log("移除");
           hostRemove(preChild.el);
           continue;
         }
@@ -205,8 +207,8 @@ export function createRenderer(options) {
         }
         if (moved) {
           if (j < 0 || i !== increasingNewIndex[j]) {
-            console.log("修改位置", i);
-            console.log(anchor);
+            // console.log("修改位置", i);
+            // console.log(anchor);
             hostInsert(nextChild.el, container, anchor);
           } else {
             j--;
@@ -286,7 +288,7 @@ export function createRenderer(options) {
     } else {
       n2.el = n1.el;
       n2.vnode = n2;
-      console.log(n2, "+++++");
+      // console.log(n2, "+++++");
     }
   }
 
@@ -318,28 +320,35 @@ export function createRenderer(options) {
     container: any,
     anchor
   ) {
-    instance.update = effect(() => {
-      if (!instance.isMounted) {
-        const subTree = instance.render.call(instance.proxy);
-        instance.subTree = subTree;
-        patch(null, subTree, container, instance, anchor);
+    instance.update = effect(
+      () => {
+        if (!instance.isMounted) {
+          const subTree = instance.render.call(instance.proxy);
+          instance.subTree = subTree;
+          patch(null, subTree, container, instance, anchor);
 
-        // 组件处理完成 后
-        vnode.el = subTree.el;
-        instance.isMounted = true;
-      } else {
-        const { next, vnode } = instance;
-        if (next) {
-          next.el = vnode.el;
-          updateComponentPreRender(instance, next);
+          // 组件处理完成 后
+          vnode.el = subTree.el;
+          instance.isMounted = true;
+        } else {
+          const { next, vnode } = instance;
+          if (next) {
+            next.el = vnode.el;
+            updateComponentPreRender(instance, next);
+          }
+          const subTree = instance.render.call(instance.proxy);
+          const preSubTree = instance.subTree;
+          instance.subTree = subTree;
+
+          patch(preSubTree, subTree, container, instance, anchor);
         }
-        const subTree = instance.render.call(instance.proxy);
-        const preSubTree = instance.subTree;
-        instance.subTree = subTree;
-
-        patch(preSubTree, subTree, container, instance, anchor);
+      },
+      {
+        scheduler() {
+          queueJob(instance.update);
+        },
       }
-    });
+    );
   }
   return {
     createApp: createAppAPI(render),
